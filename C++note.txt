@@ -1,0 +1,299 @@
+如果参数是不需要修改的话，则应该在参数列表后和大括号之前加const
+
+在能传引用的时候尽量传引用，传引用是为了提速，由于传引用在函数中修改引用会导致值本身被修改，所以为了不修改值的话应在引用前加const
+
+同一个class下的各个objects互为友元
+
+判断什么时候用引用，在函数内创建的变量不能返回引用（本体会被析构，引用会导致看到非法数据）
+
+函数封装出来可以提高代码的复用
+
+return by reference 好处在于传递着无需知道接收端是以reference形式接收（不用void指针是防止连着相加）
+
+temp object(临时对象)  typename(); // 产生临时对象  return typename(); 这种情况下不能返回引用
+
+标准库不可能认识新写的类所以需要重载<<才能输出类型数据
+
+*****重载os操作符的话应该写在全局，不应该写在模块中
+
+
+---------------------------------类应该怎么写-----------------------------------------
+1、函数是否足够简单，足够简单的函数应该声明为inline
+2、是否能引用，应不应该发生变化，不发生变化的应声明const
+3、考虑类的构造、拷贝、赋值、析构
+    (涉及指针的类一定要注意拷贝构造和拷贝赋值，否则会造成内存泄露)
+
+
+2022. 1.10
+static data 不属于对象，只有一份
+static function 只有一份，不同与一般函数，没有this pointer，只能用于处理静态的数据
+
+
+调用static函数可以通过两种方式
+(1)通过object调用
+(2)通过class name来进行调用
+
+单例模式
+(1)把构造函数放到private里面
+(2)在public里面放一个静态函数，用来返回一个全局唯一的对象
+(3)使用一次之后单例就会出现
+
+2022. 1.11
+1、class template
+类模板使用的时候需要明确指出来type要绑定为什么
+2、function template
+函数模板不需要，编译器会对function template进行参数推导（argument deduction）
+
+标准库里会有许多相应的算法，当调用到类的比较的时候会根据调用的类查看有没有对应符号的重载
+3、namespace
+(1)using direction : using namespace std;
+(2)using declaration(声明) : using std::cout;
+(3)不适用的时候 : std::cout   std::cin 
+
+2022. 1.12
+类的关系：
+1、复合：一个类包含另一类 
+2、委托：将具体的实现放在单独的类中
+3、继承：子类包含基类，基类的析构函数应声明为虚函数
+1、Delegation(委托).Composition by reference
+PImpl：Pointer to implementation
+“指向实现的指针”或“pImpl”是一种 C++ 编程技术[1]，它通过将类的实现细节放在一个单独的类中，从其
+对象表示中删除它们，通过一个不透明的指针访问它们
+如果有指针指向另一个对象，这样就是委托，两者的生命周期不是同步的
+
+虚函数与多态
+1)non-virtual函数：你不希望子类(derived)重新定义(override, 覆写)
+2)virtual函数：你希望子类(derived)重新定义(override, 覆写)，并且已有默认定义
+3)pure-virtual函数：你希望子类(derived)一定要重新定义(override, 覆写)，没有默认的定义
+
+继承关系最重要的就是为了搭配虚函数，从而实现多态                                                                       
+
+虚函数使用方法：
+1)报错信息 用virtual函数实现，预设了一种报错信息，但是子类有更好更细的思路允许子类重新来写
+
+Template Method 一般性的动作在框架下先实现但是关键动作写为虚函数，(应用)虚函数要具体的子类来实现
+
+2022. 1.13
+一、如何分析并实现file system
+想实现一个容器的话，需要实现一个类
+
+
+2022. 1.14
+conversion function 转换函数
+转换函数在代码使用的时候会由编译器来找调用合适的函数能使得（操作符重载函数设计应合理）
+class Fraction {
+public:
+	Fraction(int num, int den = 1)
+		: m_numerator(num), m_denorminator(den){}
+	operator double() const {
+		return (double)(m_numerator / m_denorminator);
+	}
+
+private:
+	int m_denorminator;
+	int m_numerator;
+};
+如代码所示，此种情况下允许转换函数不写返回值类型
+
+non-explicit-one-argument      // explicit明确地
+
+public:
+	Fraction(int num, int de = 1)
+		: m_numerator(num), m_denorminator(den){}
+
+	Fraction operator+(const Fraction &f) {
+		return Fraction(......);
+	}
+    
+两种方式都可以实现类和int型数据相加但是不能同时出现
+加了explicit后就禁止了编译器自行对数据处理（一般explicit关键字用于构造函数，防止编译器自行构造对象，造成语句二义性）
+
+
+2022. 1.15
+智能指针：pointer-like classes 像指针一样的类(在2.0之前只有一种智能指针，后来有几种智能指针)
+template<class T>
+class shared_ptr
+{
+public:
+    T& operator*() const
+    { return *px; }
+    T& operator->() const
+    { return px; }
+    
+    shared_ptr(T *p) : px(p) {}
+    
+private:
+    T* px;
+    long* pn;
+};
+-> C++语法规定的->不会被消耗掉
+
+pointer-like classes, 迭代器部分
+有重载++ 、 -- 部分。这些用来移动地址，迭代器与一般智能指针不同之处
+
+2022. 1.16
+function-like classes 仿函数
+标准库里面的仿函数对操作符进行了重载，重载的时候继承了下面的两个类型，分别用来处理单目操作符
+以及双目操作符。这样能更清楚表现pair中两种类型的含义（具体的情况见STL标准库课程）
+template <class Arg, class Result>
+struct unary_function {
+    typedef Arg argument_type;
+    typedef Result result_type;
+};
+
+template <class Arg, class Arg2, class Result>
+struct unary_function {
+    typedef Arg1 first_argument_type;
+    typedef Arg2 second_argument_type;
+    typedef Result result_type;
+};
+
+namespace 主要目的是为了区别独立作业用名字包起来，防止冲突
+
+class template 模板类用法 类型名称<参数类型>
+
+function template 函数模板用法,如下：
+template <class T>
+inline const T& min(const T& a,const T& b)
+{
+    return b < a ? b : a;
+}
+直接调用函数即可,编译器会对function template进行实参推导(argument deduction)
+class stone
+{
+public:
+    stone(int w, int h, int we):_w(w),_h(h),_weight(we){}
+    
+    bool operator< (const stone& rhs) const
+    {return _weight < rhs.weight; }
+private:
+    int _w, _h, _weight;
+}
+实参的推导结果： T为stone，于是调用stone::operator<
+
+成员模板 建立一个基类的模板，子类的对象可以用来初始化基类对象
+
+
+2022. 1.18
+在某种情况下需要特殊的设计时，就需要模板的特化
+specialization 模板特化
+partial specialization 偏特化
+模板参数的个数上的偏
+template<typename T, typename Alloc = .......>
+class vector
+{
+...
+};
+
+template<typename Alloc = .......>
+class vector<bool, Alloc>
+{
+...
+};
+
+模板参数的类型上的偏
+template <typename T>
+class C
+{
+.......
+};
+
+template <typename T>
+class C<T*>
+{
+.......
+};
+
+2022. 1.19
+template template parameter，模板模板参数
+
+template<typename T, 
+    template<typename T> 
+    class Container>
+class XCls
+{
+private:
+    container<T> c;
+public:
+    ......
+};
+
+template<typename T>
+using Lst = list<T, allocator<T>>;
+
+在模板模板参数里
+X XCls<string, list> mylst1;  // 写法有问题，编译无法通过 模板模板参数需要指定（容器此时需要指定类型和分配器）
+容器有第二模板参数，平时不写是因为有默认值，
+ XCls<string, Lst> mylst2;
+ 
+这不是模板template template parameter
+template<class T, class Sequence = deque<T>>
+class stack{
+    friend bool operator==<> (const stack&, const stack&);
+    friend bool operator==< (const stack&, const stack&);
+    protected:
+    Sequence c; // 底层容器
+    ....
+};
+// 默认参数是模板 的模板，不是模板模板参数
+
+2022. 1.21
+variadic template // 将变量用递归的方式拆解出来，没有参数的时候终止，每次分解出一个参数处理
+void print()
+{
+
+}
+template<typename T,typename... Types>
+void print(const T& firstArg, const Types...args)
+{
+    cout<<firstArg<<endl;
+    print(args...);
+}
+
+auto 是为了方便，有时候太长了不想写，或者写不出来的时候才用。
+auto 生效是因为编译器可以将类型推导出来
+
+list<string> c;
+...
+list<string>::iterator ite;
+ite = find(c.begin(), c.end(), target);
+
+list<string> c;
+...
+auto ite = find(c.begin(), c.end(), target);
+
+ranged-base for
+
+vector<double> vec;
+...
+for (auto elem : vec) {
+    cout<< elem<< endl;
+}
+
+for (auto& elem : vec) { // 需要修改本身的话就需要用引用，引用本质就是指针
+    elem *= 3;
+}
+
+对于编译器来说sizeof的计算结果  引用与对象的大小相同，地址相同（全是假象 引用本质是指针）
+reference 通常不用于声明变量，而是用于参数类型(parameters type)和返回类型(return type)的描述
+在C++中参数写变量和引用变量在编译器眼里是一样所以两种函数不能同时存在
+
+对象模型(Object Model):关于vptr和vtbl
+世界上没有一种容器可以放大小不一的东西，声明一个容器里面放指针（使得容器里可以放各种对象）
+动态绑定的三个条件：
+1、指针
+2、up-cast 向上转型（父类指针指向子类对象）
+3、调用的是虚函数
+
+对象模型 关于this
+ 
+ 
+2022. 1.23
+const的使用
+    charT operator[](size_type pos) const {} //不需要考虑COW
+    reference operator[](size_type pos) {} // 必须考虑COW COW：copy on write                                                                    
+    在字符串设计中，拷贝了几份的相同字符串，实际上字符串是共享的。而当其中一份想要修改字符串的时候就需要单独拷贝出来一份以提供修改
+    
+const object  可以使用const member function 无法使用 non-const member function（非const函数允许修改对象，而const对象无法调用该类成员函数）                                                                       
+non-const object  可以使用const member function 也可以使用 non-const member function                                                                                      
+    当成员函数的const和non-const版本同时存在，const object只会（只能）调用const版本，non-const只会（只能）调用non-const版本
