@@ -297,6 +297,3 @@ const的使用
 const object  可以使用const member function 无法使用 non-const member function（非const函数允许修改对象，而const对象无法调用该类成员函数）                                                                       
 non-const object  可以使用const member function 也可以使用 non-const member function                                                                                      
     当成员函数的const和non-const版本同时存在，const object只会（只能）调用const版本，non-const只会（只能）调用non-const版本
-
-2024
-测试能否正常上传笔记
